@@ -1,0 +1,63 @@
+server:
+  port: 8081
+  address: 0.0.0.0
+  tomcat:
+    basedir: logs
+    accesslog:
+      enabled: false
+      rotate: true
+      rename-on-rotate: true
+      directory: access_log
+      file-date-format: .yyyy-MM-dd
+  compression:
+    enabled: true
+    mime-types: "application/json,application/xml,text/html,text/xml,text/plain,application/javascript,text/css"
+
+spring:
+  application.name: ascoltate
+  mvc.throw-exception-if-no-handler-found: true
+  resources.add-mappings: false
+  jackson:
+    parser:
+      ALLOW_UNQUOTED_FIELD_NAMES: true
+      ALLOW_SINGLE_QUOTES: true
+    default-property-inclusion: "non_null"
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: true
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 10000
+      maximum-pool-size: 30
+      initialization-fail-timeout: 5000
+  jpa.properties.hibernate:
+    use-new-id-generator-mappings: true
+    enable_lazy_load_no_trans: true    
+  servlet:
+    multipart:
+      enabled: false
+      max-file-size: 1224MB
+      max-request-size: 1224MB
+  output:
+    ansi:
+      enabled: DETECT
+  jpa:
+    hibernate:
+      use-new-id-generator-mappings: true
+      enable_lazy_load_no_trans: true
+  data:
+    web:
+      pageable:
+        one-indexed-parameters: true
+logging:
+  config: classpath:logback-spring.xml
+  level:
+    org.apache.orc.impl: WARN
+    com.zaxxer.hikari.HikariDataSource: WARN
+    org.apache.hadoop.fs.TrashPolicyDefault: WARN
+    org.apache.hadoop.io.compress.CodecPool: WARN
+
+spring.jpa.open-in-view: false
+#spring.jpa.hibernate.naming.implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+#spring.jpa.hibernate.naming.physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+hibernate.globally_quoted_identifiers: true

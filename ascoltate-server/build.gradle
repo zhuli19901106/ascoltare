@@ -1,0 +1,114 @@
+description = 'ascoltate-server'
+
+apply plugin: "java"
+apply plugin: "idea"
+apply plugin: "distribution"
+apply plugin: "org.springframework.boot"
+apply plugin: "io.spring.dependency-management"
+
+idea {
+    module {
+        sourceDirs += file('generated/')
+    }
+}
+
+distributions {
+    main {
+        contents {
+            exclude('*/.gitkeep')
+            into('lib') {
+                from jar
+                from configurations.runtime
+            }
+            into('') {
+                from('src/dist')
+            }
+            eachFile { file ->
+                if (file.getName().endsWith(".sh") || file.getName().endsWith(".bat")) {
+                    file.setMode(0755)
+                }
+            }
+        }
+    }
+}
+
+jar {
+    enabled = true
+    duplicatesStrategy = 'exclude'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir "$buildDir/classes/java/main"
+        }
+    }
+}
+
+//querydsl {
+//    jpa = true
+//    querydslSourcesDir = "$buildDir/generated/source/apt/main"
+//}
+
+springBoot {
+    mainClassName = 'com.zhuli.ascoltate.server.AscoltateApplication'
+}
+
+configurations.all {
+    // apache logging
+    exclude group: 'commons-logging', module: 'commons-logging'
+    exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    exclude group: 'log4j', module: 'log4j'
+    exclude group: 'javax.servlet', module: 'servlet-api'
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-security'
+}
+
+dependencyManagement {
+    resolutionStrategy {
+        cacheChangingModulesFor 0, 'seconds'
+    }
+}
+
+dependencies {
+    compile project(':ascoltate-common')
+
+    def excludeLog = {
+        exclude(group: "org.apache.logging.log4j", module: "log4j-to-slf4j")
+    }
+
+    def excludeFeign = {
+        exclude group: 'io.github.openfeign', module: 'feign-core'
+        exclude group: 'io.github.openfeign', module: 'feign-jackson'
+        exclude group: 'io.github.openfeign', module: 'feign-jaxrs'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+    }
+
+    compile("org.springframework.boot:spring-boot-starter-web", excludeLog)
+    compile("org.springframework.boot:spring-boot-starter-aop", excludeLog)
+    compile("org.springframework.boot:spring-boot-starter-actuator", excludeLog)
+
+    compile("org.apache.commons:commons-lang3:3.0")
+
+    compile('org.flywaydb:flyway-core:5.0.7')
+    compile('mysql:mysql-connector-java:8.0.13')
+    compile('com.github.ulisesbocchio:jasypt-spring-boot-starter:2.0.0')
+    compile('org.springframework.boot:spring-boot-starter-data-jpa', excludeLog)
+
+    compile('io.github.openfeign:feign-core:9.5.1')
+    compile('io.github.openfeign:feign-jackson:9.5.1')
+    compile('io.github.openfeign:feign-jaxrs:9.5.1')
+
+    //query dsl
+    compile("com.querydsl:querydsl-jpa:4.1.4")
+    compileOnly("com.querydsl:querydsl-apt:4.1.4:jpa") // Code gen
+
+    compile('io.minio:minio:6.0.8')
+}
+
+task pack(type: Copy, dependsOn: [clean, installDist]) {
+}
+
+test {
+    maxParallelForks = 2
+    minHeapSize = "2048m"
+}

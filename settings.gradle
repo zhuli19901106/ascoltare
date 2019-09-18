@@ -1,0 +1,3 @@
+rootProject.name = 'ascoltate'
+include ':ascoltate-server'
+include ':ascoltate-common'
